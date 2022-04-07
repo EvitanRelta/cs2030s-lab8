@@ -6,6 +6,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * The BusAPI class interface with the Web API running at 
@@ -39,25 +40,23 @@ class BusAPI {
    * @return The HTTP resposne body, or an empty string if the 
    *     query fails.
    */
-  private static String httpGet(String url) {
+  private static CompletableFuture<String> httpGet(String url) {
     HttpClient client = HttpClient.newBuilder()
         .build();
     HttpRequest request = HttpRequest.newBuilder()
         .uri(URI.create(url))
         .build();
-    HttpResponse<String> response;
+    CompletableFuture<HttpResponse<String>> responseCF;
 
-    try {
-      response = client.send(request, BodyHandlers.ofString()); // TODO 
-    } catch (IOException | InterruptedException e) {
-      throw new CompletionException(e);
-    }
+    responseCF = client.sendAsync(request, BodyHandlers.ofString());
 
-    if (response.statusCode() != 200) {
-      System.out.println(response + " " + response.statusCode());
-      return "";
-    }
-    return response.body();
+    return responseCF.thenApply(response -> {
+      if (response.statusCode() != 200) {
+        System.out.println(response + " " + response.statusCode());
+        return "";
+      }
+      return response.body();
+    });
   }
 
   /**
@@ -67,7 +66,7 @@ class BusAPI {
    *     the bus stops that are serviced at this bus.  Return an empty
    *     string if something go wrong.
    */ 
-  public static String getBusStopsServedBy(String serviceId) {
+  public static CompletableFuture<String> getBusStopsServedBy(String serviceId) {
     return httpGet(BUS_SERVICE_API + serviceId);
   }
 
@@ -78,7 +77,7 @@ class BusAPI {
    *     the bus services that stopped at this bus stop; an empty 
    *     string if the API query failed.
    */ 
-  public static String getBusServicesAt(String stopId) {
+  public static CompletableFuture<String> getBusServicesAt(String stopId) {
     return httpGet(BUS_STOP_API + stopId);
   }
 }
