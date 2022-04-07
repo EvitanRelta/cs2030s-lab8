@@ -1,1 +1,10 @@
 *.class
+.*.sw[a-z]
+.nfs*
+*.test.*
+.gitignore
+run_all_tests.sh
+partial_test.sh
+docs/
+LoadCs2030sFp.jsh
+LoadTest.jsh
