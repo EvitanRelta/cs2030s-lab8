@@ -1,5 +1,6 @@
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Encapsulates the result of a query: for a bus stop and a search string,
@@ -14,7 +15,7 @@ import java.util.Set;
 class BusRoutes {
   final BusStop stop;
   final String name;
-  final Map<BusService, Set<BusStop>> services;
+  final Map<BusService, CompletableFuture<Set<BusStop>>> services;
 
   /**
    * Constructor for creating a bus route.
@@ -22,7 +23,7 @@ class BusRoutes {
    * @param name The second bus stop.
    * @param services The set of bus services between the two stops.
    */
-  BusRoutes(BusStop stop, String name, Map<BusService, Set<BusStop>> services) {
+  BusRoutes(BusStop stop, String name, Map<BusService, CompletableFuture<Set<BusStop>>> services) {
     this.stop = stop;
     this.name = name;
     this.services = services;
@@ -34,15 +35,25 @@ class BusRoutes {
    *     bus stop id and search string.  The remaining line contains 
    *     the bus services and matching stops served.
    */
-  public String description() {
-    String result = "Search for: " + this.stop + " <-> " + name + ":\n";
-    result += "From " +  this.stop + "\n";
+  public CompletableFuture<String> description() {
+    String startingStr = String.format(
+        "Search for: %s <-> %s:\nFrom %s\n",
+        this.stop,
+        this.name,
+        this.stop
+    );
+
+    CompletableFuture<String> resultCF = 
+        CompletableFuture.completedFuture(startingStr);
 
     for (BusService service : services.keySet()) {
-      Set<BusStop> stops = services.get(service);
-      result += describeService(service, stops);
+      CompletableFuture<Set<BusStop>> stopsCF = services.get(service);
+      resultCF = resultCF.thenCombine(
+          stopsCF,
+          (result, stops) -> result + describeService(service, stops)
+      );
     }
-    return result;
+    return resultCF;
   }
 
   /**
