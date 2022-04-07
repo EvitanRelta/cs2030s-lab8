@@ -2,6 +2,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * A BusSg class encapsulate the data related to the bus services and
@@ -19,16 +20,22 @@ class BusSg {
    * @param  searchString The (partial) name of other bus stops, assume not null.
    * @return The (optional) bus routes between the stops.
    */
-  public static BusRoutes findBusServicesBetween(BusStop stop, String searchString) {
-    try {
-      Map<BusService, Set<BusStop>> validServices = stop.getBusServices().stream()
-          .collect(Collectors.toMap(
-              service -> service, 
-              service -> service.findStopsWith(searchString)));
-      return new BusRoutes(stop, searchString, validServices);
-    } catch (CompletionException e) {
-      System.err.println("Unable to complete query: " + e);
-      return new BusRoutes(stop, searchString, Map.of());
-    }
+  public static CompletableFuture<BusRoutes> findBusServicesBetween(
+      BusStop stop, String searchString
+  ) {
+    return stop.getBusServices()
+        .thenApply(busServices -> busServices.stream()
+            .collect(Collectors.toMap(
+                service -> service, 
+                service -> service.findStopsWith(searchString)
+            ))
+        )
+        .thenApply(
+            validServices -> new BusRoutes(stop, searchString, validServices)
+        )
+        .exceptionally(e -> {
+          System.err.println("Unable to complete query: " + e);
+          return new BusRoutes(stop, searchString, Map.of());
+        });
   }
 }
