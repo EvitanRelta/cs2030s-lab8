@@ -3,6 +3,8 @@ import java.io.FileReader;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * This program finds different ways one can travel by bus (with a bit 
@@ -21,13 +23,33 @@ public class Main {
   public static void main(String[] args) {
     Instant start = Instant.now();
     try {
+      ArrayList<CompletableFuture<Void>> allCFs = new ArrayList<>();
+      ArrayList<String> descriptions = new ArrayList<>();
+
       Scanner sc = createScanner(args);
       while (sc.hasNext()) {
         BusStop srcId = new BusStop(sc.next());
         String searchString = sc.next();
-        System.out.println(BusSg.findBusServicesBetween(srcId, searchString).description());
+        allCFs.add(BusSg
+            .findBusServicesBetween(srcId, searchString)
+            .thenCompose(busRoutes -> busRoutes.description())
+            .thenAccept(description -> {
+              descriptions.add(description);
+            })
+        );
       }
       sc.close();
+
+      @SuppressWarnings("rawtypes")
+      CompletableFuture<?>[] cfArray = (CompletableFuture<?>[]) allCFs.toArray(
+          new CompletableFuture[allCFs.size()]
+      );
+      CompletableFuture.allOf(cfArray)
+          .thenRun(() -> {
+            descriptions.stream()
+                .forEach(description -> System.out.println(description));
+          })
+          .join();
     } catch (FileNotFoundException exception) {
       System.err.println("Unable to open file " + args[0] + " "
           + exception);
