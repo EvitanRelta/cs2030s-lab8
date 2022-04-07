@@ -1,8 +1,8 @@
 import java.util.Scanner;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Encapsulate a bus stop with a unique String id, the location (in long, lat),

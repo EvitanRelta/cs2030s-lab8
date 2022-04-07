@@ -2,8 +2,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 
 /**

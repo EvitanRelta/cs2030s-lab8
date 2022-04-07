@@ -1,8 +1,8 @@
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * A BusSg class encapsulate the data related to the bus services and
