@@ -8,3 +8,5 @@ partial_test.sh
 docs/
 LoadCs2030sFp.jsh
 LoadTest.jsh
+logs/
+logs/*
