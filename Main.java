@@ -23,27 +23,25 @@ public class Main {
   public static void main(String[] args) {
     Instant start = Instant.now();
     try {
-      ArrayList<CompletableFuture<Void>> allCFs = new ArrayList<>();
-      ArrayList<String> descriptions = new ArrayList<>();
+      ArrayList<CompletableFuture<String>> descriptionCFs = new ArrayList<>();
 
       Scanner sc = createScanner(args);
       while (sc.hasNext()) {
         BusStop srcId = new BusStop(sc.next());
         String searchString = sc.next();
-        allCFs.add(BusSg
+        descriptionCFs.add(BusSg
             .findBusServicesBetween(srcId, searchString)
             .thenCompose(busRoutes -> busRoutes.description())
-            .thenAccept(description -> {
-              descriptions.add(description);
-            })
         );
       }
       sc.close();
 
-      CompletableFuture<?>[] cfArray = allCFs.toArray(new CompletableFuture<?>[0]);
+      CompletableFuture<?>[] cfArray = 
+          descriptionCFs.toArray(new CompletableFuture<?>[0]);
       CompletableFuture.allOf(cfArray)
           .thenRun(() -> {
-            descriptions.stream()
+            descriptionCFs.stream()
+                .map(CompletableFuture::join)
                 .forEach(description -> System.out.println(description));
           })
           .join();
