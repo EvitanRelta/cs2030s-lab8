@@ -40,10 +40,7 @@ public class Main {
       }
       sc.close();
 
-      @SuppressWarnings("rawtypes")
-      CompletableFuture<?>[] cfArray = (CompletableFuture<?>[]) allCFs.toArray(
-          new CompletableFuture[allCFs.size()]
-      );
+      CompletableFuture<?>[] cfArray = allCFs.toArray(new CompletableFuture<?>[0]);
       CompletableFuture.allOf(cfArray)
           .thenRun(() -> {
             descriptions.stream()
