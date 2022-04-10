@@ -23,19 +23,22 @@ class BusSg {
   public static CompletableFuture<BusRoutes> findBusServicesBetween(
       BusStop stop, String searchString
   ) {
-    return stop.getBusServices()
-        .thenApply(busServices -> busServices.stream()
-            .collect(Collectors.toMap(
-                service -> service, 
-                service -> service.findStopsWith(searchString)
-            ))
-        )
-        .thenApply(
-            validServices -> new BusRoutes(stop, searchString, validServices)
-        )
-        .exceptionally(e -> {
-          System.err.println("Unable to complete query: " + e);
-          return new BusRoutes(stop, searchString, Map.of());
-        });
+    try {
+      return stop.getBusServices()
+          .thenApply(busServices -> busServices.stream()
+              .collect(Collectors.toMap(
+                  service -> service, 
+                  service -> service.findStopsWith(searchString)
+              ))
+          )
+          .thenApply(
+              validServices -> new BusRoutes(stop, searchString, validServices)
+          );
+    } catch (CompletionException e) {
+      System.err.println("Unable to complete query: " + e);
+      return CompletableFuture.completedFuture(
+          new BusRoutes(stop, searchString, Map.of())
+      );
+    }
   }
 }
