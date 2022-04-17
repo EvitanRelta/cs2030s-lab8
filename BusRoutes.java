@@ -13,9 +13,9 @@ import java.util.concurrent.CompletableFuture;
  * @version: CS2030S AY21/22 Semester 2, Lab 8
  */
 class BusRoutes {
-  final BusStop stop;
-  final String name;
-  final Map<BusService, CompletableFuture<Set<BusStop>>> services;
+  private final BusStop stop;
+  private final String name;
+  private final Map<BusService, CompletableFuture<Set<BusStop>>> services;
 
   /**
    * Constructor for creating a bus route.
